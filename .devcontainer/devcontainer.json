@@ -1,6 +1,5 @@
 {
-  "name": "Python 3",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "name": "Python 3 + Ollama",
   "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bullseye",
   "customizations": {
     "codespaces": {
@@ -13,7 +12,9 @@
       "settings": {},
       "extensions": [
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "streetsidesoftware.code-spell-checker"
       ]
     }
   },
@@ -21,13 +22,20 @@
   "postAttachCommand": {
     "server": "streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false"
   },
+  "postCreateCommand": "curl -fsSL https://ollama.com/install.sh | sh",
+  "postStartCommand": "ollama serve & ollama pull mistral",
   "portsAttributes": {
     "8501": {
-      "label": "Application",
+      "label": "Streamlit App",
       "onAutoForward": "openPreview"
+    },
+    "11434": {
+      "label": "Ollama Server",
+      "onAutoForward": "notify"
     }
   },
   "forwardPorts": [
-    8501
+    8501,
+    11434
   ]
 }
