@@ -1,0 +1,23 @@
+[
+  {
+    "TestCase": "Verify the emotional response of a customer during a live support call when resolving a billing dispute",
+    "Feasibility": "Not Automatable",
+    "Recommended Tool": "Manual",
+    "Confidence Score": 0,
+    "Rationale": "This test case involves emotional responses, which are subjective and qualitative in nature. They cannot be accurately measured or validated using automated testing tools."
+  },
+  {
+    "TestCase": "Verify user login",
+    "Feasibility": "Automatable",
+    "Recommended Tool": "Selenium (for web applications) or Appium (for mobile apps)",
+    "Confidence Score": 95,
+    "Rationale": "This test case is typically automatable as it involves interacting with user interfaces. Selenium and Appium are popular choices due to their compatibility with a wide range of browsers and platforms."
+  },
+  {
+    "TestCase": "Verify registration with duplicate email",
+    "Feasibility": "Automatable",
+    "Recommended Tool": "Selenium",
+    "Confidence Score": 95,
+    "Rationale": "This test case can be automated using tools like Selenium as it involves interacting with the user interface and checking for specific error messages. However, the exact confidence score may depend on the reliability of the error handling in the application."
+  }
+]

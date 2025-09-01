@@ -1,0 +1,67 @@
+[
+  {
+    "Test Case ID": "TC001",
+    "Test Description": "Verify user login",
+    "Expected Result": "User successfully logs in and lands on dashboard",
+    "Actual Result": "As Expected",
+    "Steps": [
+      {
+        "Step": "1. Launch the app",
+        "Feasibility": "Partially Automatable",
+        "Recommended Tool": "Appium",
+        "Confidence Score": 75,
+        "Rationale": "The app launch step can be partially automated using a mobile automation tool like Appium. However, the exact approach may depend on the type of app (native, hybrid or web) and the OS it is running on. The confidence score reflects the assumption that the app has been properly instrumented for automation."
+      },
+      {
+        "Step": "2. Enter valid username & password",
+        "Feasibility": "Automatable",
+        "Recommended Tool": "Selenium (for web applications) or Appium (for mobile applications)",
+        "Confidence Score": 95,
+        "Rationale": "This step can be automated as it involves user interactions with the UI, which is a common target for automation. However, the confidence score may vary depending on factors such as the stability of the application under test and the consistency of the input fields."
+      },
+      {
+        "Step": "3. Click login",
+        "Feasibility": "Automatable",
+        "Recommended Tool": "Selenium",
+        "Confidence Score": 95,
+        "Rationale": "This step can be automated as it involves user interaction with a clickable element. Selenium is recommended due to its wide support for various web browsers."
+      }
+    ]
+  },
+  {
+    "Test Case ID": "TC002",
+    "Test Description": "Verify that CAPTCHA validation works correctly and prevents automated login attempts",
+    "Expected Result": "User is logged in only if CAPTCHA is solved correctly. If CAPTCHA is incorrect or skipped, login should be blocked with an appropriate error message",
+    "Actual Result": "As Expected",
+    "Steps": [
+      {
+        "Step": "1. Navigate to the login page",
+        "Feasibility": "Automatable",
+        "Recommended Tool": "Selenium",
+        "Confidence Score": 95,
+        "Rationale": "This step can be automated as it involves navigating to a specific webpage. Selenium is recommended due to its wide support for various browsers and programming languages."
+      },
+      {
+        "Step": "2. Enter valid username and password",
+        "Feasibility": "Automatable",
+        "Recommended Tool": "Selenium",
+        "Confidence Score": 95,
+        "Rationale": "This step can be automated as it involves user interaction with the web interface. Selenium is a suitable tool for this task due to its ability to handle browser automation."
+      },
+      {
+        "Step": "3.Complete the CAPTCHA challenge manually",
+        "Feasibility": "Not Automatable",
+        "Recommended Tool": "Manual",
+        "Confidence Score": 0,
+        "Rationale": "Since the step involves manual completion of a CAPTCHA challenge, it is not feasible to automate this task. Human interaction and cognition are required for solving CAPTCHAs."
+      },
+      {
+        "Step": "4.Click \"Login\" button",
+        "Feasibility": "Automatable",
+        "Recommended Tool": "Selenium",
+        "Confidence Score": 95,
+        "Rationale": "This step can be automated using Selenium as it involves interacting with the UI element (button). However, the confidence score is not 100 because there could be cases where the button is not clickable due to certain dynamic conditions or dependencies."
+      }
+    ]
+  }
+]
