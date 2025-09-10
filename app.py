@@ -109,7 +109,7 @@ tool_colors = {
 st.set_page_config(page_title="Test Cases Automation Analyzer", layout="wide")
 st.title("🔍 Test Cases Automation Feasibility Analyzer")
 
-uploaded_file = st.file_uploader("Upload your Test Cases Excel file", type=["xlsx"])
+uploaded_file = st.file_uploader("📁 Upload your Test Cases Excel file", type=["xlsx"])
 
 # Run analysis once
 if uploaded_file and "result_df" not in st.session_state:
