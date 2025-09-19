@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 
 client = Client()
 
-# IBM-inspired styling
+# styling
 st.markdown("""
     <style>
     body {
@@ -32,30 +32,39 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Prompt builder
-def build_step_prompt(step_text):
-    return [
-        {'role': 'system', 'content': 'You are a QA automation expert. Respond ONLY in JSON format.'},
-        {'role': 'user', 'content': f"""
-Analyze the following test step and respond strictly in JSON format:
+def build_step_prompt(step_text: str):
+    system_message = {
+        "role": "system",
+        "content": "You are a QA automation expert. Respond ONLY in JSON format following the schema."
+    }
+
+    schema = {
+        "Feasibility": "string: one of [Automatable, Partially Automatable, Not Automatable]",
+        "Recommended Tools": "array of strings: choose from [Selenium, Cypress, Appium, Manual]",
+        "Recommended Primary Tool": "string: exactly one tool from the above list",
+        "Confidence Score": "integer: 0 to 100",
+        "Rationale": "string: brief explanation"
+    }
+
+    user_message = {
+        "role": "user",
+        "content": f"""
+Analyze the following test step:
 
 Step: "{step_text}"
 
-Respond with:
-{{
-  "Feasibility": "Automatable / Partially Automatable / Not Automatable",
-  "Recommended Tools": ["Selenium", "Cypress", "Appium", "Manual"],
-  "Recommended Primary Tool": "Select one tool name from the list above that best fits this step, considering platform compatibility, ease of setup, team skillset, and UI interaction type. Return only the tool name.",
-  "Confidence Score": 0-100,
-  "Rationale": "Brief explanation"
-}}
+Respond with valid JSON that matches this schema:
+{json.dumps(schema, indent=2)}
 
 Guidelines:
-- Return only valid JSON. No markdown, bullet points, or extra commentary.
-- Do NOT include parentheses, qualifiers, or extra text in tool names.
-- Use only the tools listed above. If multiple tools apply, include them all in "Recommended Tools".
-- Choose one best-fit tool for "Recommended Primary Tool" based on platform compatibility, ease of setup, and UI interaction type.
-"""}
-    ]
+- Output only valid JSON, no markdown or commentary.
+- Use the exact tool names provided, no alterations.
+- If multiple tools apply, include them all in "Recommended Tools".
+- Select the best fit as "Recommended Primary Tool".
+"""
+    }
+
+    return [system_message, user_message]
 
 # Analyze a single step
 def analyze_step(step_text):
@@ -129,7 +138,7 @@ if uploaded_file and "result_df" not in st.session_state:
                 actual = row["Actual Result"]
                 steps = [s.strip() for s in str(row["Steps"]).split("\n") if s.strip()]
 
-                with ThreadPoolExecutor(max_workers=2) as executor:
+                with ThreadPoolExecutor(max_workers=6) as executor:
                     futures = {executor.submit(analyze_step, step): step for step in steps}
                     for future in as_completed(futures):
                         result = future.result()
@@ -179,17 +188,42 @@ if uploaded_file and "result_df" not in st.session_state:
             st.session_state.summary_df = summary_df
             st.success("✅ Analysis complete!")
 
-# Display results
 if "result_df" in st.session_state and "summary_df" in st.session_state:
     result_df = st.session_state.result_df
     summary_df = st.session_state.summary_df
 
     st.subheader("📊 Summary Overview")
-    st.metric("Total Test Cases", len(summary_df))
-    st.metric("Total Steps Analyzed", len(result_df))
-    st.metric("Automatable", summary_df["Feasibility"].value_counts().get("Automatable", 0))
-    st.metric("Partially Automatable", summary_df["Feasibility"].value_counts().get("Partially Automatable", 0))
-    st.metric("Not Automatable", summary_df["Feasibility"].value_counts().get("Not Automatable", 0))
+
+    # Build summary table
+    feasibility_counts = summary_df["Feasibility"].value_counts()
+    summary_table = {
+        "Metric": [
+            "Total Test Cases",
+            "Automatable",
+            "Partially Automatable",
+            "Not Automatable"
+        ],
+        "Count": [
+            len(summary_df),
+            feasibility_counts.get("Automatable", 0),
+            feasibility_counts.get("Partially Automatable", 0),
+            feasibility_counts.get("Not Automatable", 0)
+        ]
+    }
+
+    summary_df_display = pd.DataFrame(summary_table)
+
+    # Display as styled table
+    st.table(
+    summary_df_display.set_index("Metric").style.set_properties(**{
+        'background-color': '#F8F9FA',
+        'color': '#212529',
+        'border': '1px solid #dee2e6',
+        'text-align': 'left',
+        'font-size': '13px',
+        'font-weight': '500'
+    })
+)
 
     st.markdown("## 📊 Visual Insights")
     left_col, right_col = st.columns([1.2, 1])
@@ -243,30 +277,60 @@ if "result_df" in st.session_state and "summary_df" in st.session_state:
         )
         
         st.plotly_chart(fig_tool, use_container_width=True)
+        
+        step_csv = result_df.to_csv(index=False).encode('utf-8')
+        summary_csv = summary_df.to_csv(index=False).encode('utf-8')
+        
+        # Inject custom styling to mimic your original HTML buttons
+        st.markdown("""
+<style>
+/* Target all buttons inside Streamlit columns */
+div[data-testid="column"] button {
+    background-color: #3C6DF0 !important;  /* IBM Blue */
+    color: white !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease;
+}
+div[data-testid="column"] button:hover {
+    background-color: #2F5AD3 !important;  /* Slightly darker on hover */
+}
+</style>
+""", unsafe_allow_html=True)
+        
+        # Section title
+        
+        st.markdown("### 📥 Export Results")
+        
+        # Side-by-side download buttons
+        st.markdown('<div class="download-flex">', unsafe_allow_html=True)
+        
+        # Side-by-side download buttons
+        col1, col2 = st.columns([0.25, 0.25])  # Adjust width for compact layout
+        
+        with col1:
+            st.download_button(
+                label="⬇️ Download Step-Level Analysis",
+                data=step_csv,
+                file_name="automation_feasibility_results.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
             
-    st.markdown("### 📥 Export Results")
-    st.markdown("""
-<div style="display: flex; gap: 10px;">
-    <div>
-        <a href="data:file/csv;base64,{step_csv}" download="automation_feasibility_results.csv">
-            <button style="background-color:#3C6DF0;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
-                ⬇️ Download Step-Level Analysis
-            </button>
-        </a>
-    </div>
-    <div>
-        <a href="data:file/csv;base64,{summary_csv}" download="test_case_summary.csv">
-            <button style="background-color:#3C6DF0;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
-                ⬇️ Download Test Case Summary
-            </button>
-        </a>
-    </div>
-</div>
-""".format(
-    step_csv=result_df.to_csv(index=False).encode().decode("utf-8"),
-    summary_csv=summary_df.to_csv(index=False).encode().decode("utf-8")
-), unsafe_allow_html=True)
-
+        with col2:
+            st.download_button(
+                label="⬇️ Download Test Case Summary",
+                data=summary_csv,
+                file_name="test_case_summary.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+            
+        st.markdown('</div>', unsafe_allow_html=True)    
+            
     st.markdown("""
 <div style="text-align:center; font-size:13px; color:#6c757d; margin-top:30px;">
     &copy; 2025 Devanath Kuna · All rights reserved

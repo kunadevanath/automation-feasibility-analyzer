@@ -1,8 +1,0 @@
-Test Case 1:
-Verify login functionality with valid credentials.
-
-Test Case 2:
-Check UI alignment across different screen resolutions.
-
-Test Case 3:
-Validate OTP sent via email and SMS.
